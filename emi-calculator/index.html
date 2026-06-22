@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ledger — EMI &amp; Loan Calculator</title>
+<meta name="description" content="A free, no-signup EMI calculator. See your monthly payment, total interest, and full amortization schedule instantly." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="topbar__mark">L</span>
+      <span class="topbar__name">Ledger</span>
+    </div>
+    <p class="topbar__tagline">EMI &amp; Loan Calculator</p>
+  </header>
+
+  <main class="layout">
+
+    <!-- ============ INPUT PANEL ============ -->
+    <section class="panel panel--inputs" aria-label="Loan details">
+      <h1 class="panel__title">Work out your monthly payment</h1>
+      <p class="panel__subtitle">Enter your loan amount, rate, and term. The full repayment schedule updates as you type.</p>
+
+      <form id="emiForm" novalidate>
+
+        <div class="field">
+          <label for="principal">Loan amount</label>
+          <div class="field__input-row">
+            <span class="field__prefix" id="currencySymbol">₹</span>
+            <input type="text" inputmode="decimal" id="principal" name="principal" value="2500000" autocomplete="off" />
+          </div>
+          <input type="range" id="principalRange" min="10000" max="20000000" step="10000" value="2500000" class="field__slider" />
+          <span class="field__error" id="principalError" role="alert"></span>
+        </div>
+
+        <div class="field">
+          <label for="rate">Annual interest rate</label>
+          <div class="field__input-row">
+            <input type="text" inputmode="decimal" id="rate" name="rate" value="8.5" autocomplete="off" />
+            <span class="field__suffix">% / year</span>
+          </div>
+          <input type="range" id="rateRange" min="1" max="24" step="0.05" value="8.5" class="field__slider" />
+          <span class="field__error" id="rateError" role="alert"></span>
+        </div>
+
+        <div class="field">
+          <label for="tenure">Loan term</label>
+          <div class="field__input-row">
+            <input type="text" inputmode="numeric" id="tenure" name="tenure" value="20" autocomplete="off" />
+            <div class="field__unit-toggle" role="group" aria-label="Term unit">
+              <button type="button" class="unit-btn is-active" data-unit="years">Years</button>
+              <button type="button" class="unit-btn" data-unit="months">Months</button>
+            </div>
+          </div>
+          <input type="range" id="tenureRange" min="1" max="30" step="1" value="20" class="field__slider" />
+          <span class="field__error" id="tenureError" role="alert"></span>
+        </div>
+
+        <div class="field">
+          <label for="startDate">First payment date <span class="field__optional">(optional)</span></label>
+          <input type="month" id="startDate" name="startDate" class="field__date" />
+        </div>
+
+        <div class="field field--currency">
+          <label for="currency">Currency</label>
+          <select id="currency" name="currency">
+            <option value="₹" selected>₹ Indian Rupee (INR)</option>
+            <option value="$">$ US Dollar (USD)</option>
+            <option value="€">€ Euro (EUR)</option>
+            <option value="£">£ British Pound (GBP)</option>
+            <option value="A$">A$ Australian Dollar (AUD)</option>
+          </select>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ============ RECEIPT / OUTPUT PANEL ============ -->
+    <section class="panel panel--receipt" aria-label="Repayment summary">
+
+      <div class="receipt">
+        <div class="receipt__perforation" aria-hidden="true"></div>
+
+        <div class="receipt__head">
+          <p class="receipt__head-label">Monthly Payment (EMI)</p>
+          <p class="receipt__head-amount"><span id="emiSymbol">₹</span><span id="emiAmount">0</span></p>
+        </div>
+
+        <div class="receipt__bar" id="splitBar" aria-hidden="true">
+          <div class="receipt__bar-principal" id="barPrincipal"></div>
+          <div class="receipt__bar-interest" id="barInterest"></div>
+        </div>
+        <div class="receipt__bar-legend">
+          <span><i class="legend-dot legend-dot--principal"></i>Principal</span>
+          <span><i class="legend-dot legend-dot--interest"></i>Interest</span>
+        </div>
+
+        <dl class="receipt__totals">
+          <div class="receipt__row">
+            <dt>Principal amount</dt>
+            <dd id="totalPrincipal">—</dd>
+          </div>
+          <div class="receipt__row">
+            <dt>Total interest payable</dt>
+            <dd id="totalInterest">—</dd>
+          </div>
+          <div class="receipt__row receipt__row--total">
+            <dt>Total amount payable</dt>
+            <dd id="totalPayment">—</dd>
+          </div>
+          <div class="receipt__row">
+            <dt>Number of payments</dt>
+            <dd id="totalPayments">—</dd>
+          </div>
+        </dl>
+
+        <div class="receipt__perforation" aria-hidden="true"></div>
+      </div>
+
+      <div class="schedule-block">
+        <div class="schedule-block__header">
+          <h2>Amortization schedule</h2>
+          <div class="schedule-block__actions">
+            <div class="view-toggle" role="group" aria-label="Schedule view">
+              <button type="button" class="view-btn is-active" data-view="yearly">Yearly</button>
+              <button type="button" class="view-btn" data-view="monthly">Monthly</button>
+            </div>
+            <button type="button" class="btn-csv" id="downloadCsv">Download CSV</button>
+          </div>
+        </div>
+
+        <div class="schedule-table-wrap">
+          <table class="schedule-table">
+            <thead>
+              <tr id="scheduleHeadRow">
+                <th>Year</th>
+                <th>Principal paid</th>
+                <th>Interest paid</th>
+                <th>Total paid</th>
+                <th>Balance remaining</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer__credit">
+      <a class="footer__heroes-btn" href="https://digitalheroesco.com" target="_blank" rel="noopener noreferrer">Built for Digital Heroes</a>
+    </div>
+    <div class="footer__author">
+      <p><strong>Aman Pratap Singh</strong> · <a href="mailto:your.email@example.com">amanptp1267@gmail.com</a></p>
+      <p class="footer__note">Ledger is a free tool — no signup, no data leaves your browser.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
