@@ -20,14 +20,6 @@ All calculations run client-side; no data is ever sent anywhere.
 - Fully responsive (mobile, tablet, desktop)
 - Accessible: visible focus states, semantic labels, `prefers-reduced-motion` respected
 
-## Run locally
 
-No build tools needed. Either:
-
-- Open `index.html` directly in a browser, or
-- Serve it locally for a cleaner experience:
-  ```bash
-  npx serve .
-  ```
 
 
