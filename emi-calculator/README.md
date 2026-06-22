@@ -30,34 +30,4 @@ No build tools needed. Either:
   npx serve .
   ```
 
-## Deploy on Vercel (free Hobby plan)
 
-1. Push this folder to a public GitHub repo.
-2. Go to [vercel.com](https://vercel.com) → sign in with GitHub (free, no card required).
-3. **Add New Project** → import the repo.
-4. Framework preset: **Other** (it's static HTML — no build command, no install command needed).
-5. Click **Deploy**. Done — you'll get a live `*.vercel.app` URL.
-
-Alternatively, using the Vercel CLI:
-```bash
-npm i -g vercel
-vercel
-```
-
-## Before submitting
-
-Open `index.html` and replace the placeholders in the footer:
-```html
-<p><strong>Your Full Name</strong> · <a href="mailto:your.email@example.com">your.email@example.com</a></p>
-```
-with your real name and a reachable email address.
-
-## File structure
-
-```
-emi-calculator/
-├── index.html      # Markup
-├── styles.css       # Styling (ledger/receipt design system)
-├── script.js        # EMI math, validation, schedule rendering, CSV export
-└── README.md
-```
